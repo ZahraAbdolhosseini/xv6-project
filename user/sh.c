@@ -76,6 +76,32 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       exit(1);
+    if (ecmd->argv[0] && strcmp(ecmd->argv[0], "!") == 0) {
+      int i = 1;
+      while (ecmd->argv[i]) {
+          char *msg = ecmd->argv[i];
+          while (*msg) {
+              if (msg[0] == 'o' && msg[1] == 's') {
+                  write(1, "\033[1;34m", 7); // شروع رنگ آبی
+                  write(1, "os", 2);
+                  write(1, "\033[0m", 4);    // ریست رنگ
+                  msg += 2;
+              } else {
+                  write(1, msg, 1);
+                  msg++;
+              }
+          }
+          if (ecmd->argv[i + 1]) {
+              write(1, " ", 1);
+          }
+          i++;
+      }
+      write(1, "\n", 1);
+      exit(0);
+    }
+    
+    
+    
     exec(ecmd->argv[0], ecmd->argv);
     fprintf(2, "exec %s failed\n", ecmd->argv[0]);
     break;
