@@ -77,30 +77,40 @@ runcmd(struct cmd *cmd)
     if(ecmd->argv[0] == 0)
       exit(1);
     if (ecmd->argv[0] && strcmp(ecmd->argv[0], "!") == 0) {
-      int i = 1;
-      while (ecmd->argv[i]) {
-          char *msg = ecmd->argv[i];
-          while (*msg) {
-              if (msg[0] == 'o' && msg[1] == 's') {
-                  write(1, "\033[1;34m", 7); // شروع رنگ آبی
-                  write(1, "os", 2);
-                  write(1, "\033[0m", 4);    // ریست رنگ
-                  msg += 2;
-              } else {
-                  write(1, msg, 1);
-                  msg++;
-              }
+      char message[513] = {0};
+      int total_len = 0;
+  
+      for (int i = 1; ecmd->argv[i]; i++) {
+          int len = strlen(ecmd->argv[i]);
+          if (total_len + len + 1 > 512) {
+              write(1, "Message too long\n", 18);
+              exit(0);
           }
-          if (ecmd->argv[i + 1]) {
-              write(1, " ", 1);
+          if (total_len > 0) {
+              message[total_len++] = ' ';
           }
-          i++;
+          memmove(message + total_len, ecmd->argv[i], len);
+          total_len += len;
       }
+      message[total_len] = '\0';
+  
+      char *p = message;
+      while (*p) {
+          if (p[0] == 'o' && p[1] == 's') {
+              write(1, "\033[1;34m", 7); // آبی
+              write(1, "os", 2);
+              write(1, "\033[0m", 4);    // ریست
+              p += 2;
+          } else {
+              write(1, p, 1);
+              p++;
+          }
+      }
+  
       write(1, "\n", 1);
       exit(0);
     }
-    
-    
+       
     
     exec(ecmd->argv[0], ecmd->argv);
     fprintf(2, "exec %s failed\n", ecmd->argv[0]);
