@@ -85,6 +85,7 @@ void            printfinit(void);
 int             cpuid(void);
 void            exit(int);
 int             fork(void);
+int             trigger(void);
 uint64          sys_trigger(void);
 int             growproc(int);
 void            proc_mapstacks(pagetable_t);
