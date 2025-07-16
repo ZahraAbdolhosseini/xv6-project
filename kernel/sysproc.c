@@ -57,8 +57,18 @@ sys_sleep(void)
   argint(0, &n);
   if(n < 0)
     n = 0;
+  
   acquire(&tickslock);
   ticks0 = ticks;
+  
+  // If called from a thread, only sleep the thread
+  if (myproc()->current_thread) { //
+    release(&tickslock);
+    sleepthread(n, ticks0); //
+    return 0;
+  }
+  
+  // Original process sleep logic
   while(ticks - ticks0 < n){
     if(killed(myproc())){
       release(&tickslock);
@@ -90,4 +100,19 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+uint64 sys_thread(void) {
+  uint64 start_thread, stack_address, arg;
+  argaddr(0, &start_thread); // [cite: 263]
+  argaddr(1, &stack_address); // [cite: 264]
+  argaddr(2, &arg); // [cite: 265]
+  struct thread *t = allocthread(start_thread, stack_address, arg); // [cite: 266]
+  return t ? t->id : 0; // [cite: 266, 275]
+}
+
+uint64 sys_jointhread(void) {
+  int id;
+  argint(0, &id); // [cite: 280]
+  return jointhread(id); // [cite: 281]
 }
